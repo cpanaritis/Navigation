@@ -1,4 +1,4 @@
-package ca.mcgill.ecse211.wallfollowing;
+package ca.mcgill.ecse211.navigationlab;
 
 public interface UltrasonicController {
 
