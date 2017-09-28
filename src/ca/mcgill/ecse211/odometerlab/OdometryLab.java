@@ -79,7 +79,7 @@ public class OdometryLab {
       // spawn a new Thread to avoid SquareDriver.drive() from blocking
       (new Thread() {
         public void run() {
-          SquareDriver.drive(leftMotor, rightMotor, WHEEL_RADIUS, WHEEL_RADIUS, TRACK);
+          Navigation.drive(leftMotor, rightMotor, WHEEL_RADIUS, WHEEL_RADIUS, TRACK);
         }
       }).start();
     }

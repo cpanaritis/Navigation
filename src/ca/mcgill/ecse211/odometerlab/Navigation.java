@@ -1,11 +1,11 @@
 /*
- * SquareDriver.java
+ * Navigation.java
  */
 package ca.mcgill.ecse211.odometerlab;
 
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
-public class SquareDriver {
+public class Navigation {
   private static final int FORWARD_SPEED = 200;
   private static final int ROTATE_SPEED = 100;
 
@@ -25,7 +25,7 @@ public class SquareDriver {
       // the odometer will be interrupted by another thread
     }
 
-    for (int i = 0; i < 4; i++) {
+      /*for (int i = 0; i < 4; i++) {
       // drive forward three tiles
       leftMotor.setSpeed(FORWARD_SPEED);
       rightMotor.setSpeed(FORWARD_SPEED);
@@ -39,9 +39,21 @@ public class SquareDriver {
 
       leftMotor.rotate(convertAngle(leftRadius, width, 90.0), true);
       rightMotor.rotate(-convertAngle(rightRadius, width, 90.0), false);
-    }
-  }
+    } */
+  } 
 
+  void travelTo(double x, double y) {
+	  
+  }
+  
+  void turnTo(double theta) {
+	  
+  }
+  
+  boolean isNavigating() {
+	  return true;
+  }
+  
   private static int convertDistance(double radius, double distance) {
     return (int) ((180.0 * distance) / (Math.PI * radius));
   }
