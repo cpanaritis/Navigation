@@ -16,6 +16,7 @@ public class Navigation extends Thread {
   private double radius;
   private double width;
   private Odometer odometer;
+  private static final long CORRECTION_PERIOD = 10;
 
   public Navigation (EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor,
 	      double leftRadius, double rightRadius, double width, Odometer odometer) {
@@ -25,24 +26,33 @@ public class Navigation extends Thread {
 	  this.width = width;
 	  this.odometer = odometer;
   }
-  public void drive() {
+  public void run() {
+	long correctionStart, correctionEnd;
     // reset the motors
     for (EV3LargeRegulatedMotor motor : new EV3LargeRegulatedMotor[] {leftMotor, rightMotor}) {
       motor.stop();
       motor.setAcceleration(3000);
     }
+    while (true) {
+        correctionStart = System.currentTimeMillis();
+    
     
     for(int i = 0; waypoints[0].length > i ; i++){
     	travelTo(waypoints[0][i],waypoints[1][i]);
     }
-    // wait 5 seconds
-    try {
-      Thread.sleep(2000);
-    } catch (InterruptedException e) {
-      // there is nothing to be done here because it is not expected that
-      // the odometer will be interrupted by another thread
-    }
-
+    
+    // this ensure the odometry correction occurs only once every period
+    correctionEnd = System.currentTimeMillis();
+    
+    if (correctionEnd - correctionStart < CORRECTION_PERIOD) {
+      try {
+        Thread.sleep(CORRECTION_PERIOD - (correctionEnd - correctionStart));
+      } catch (InterruptedException e) {
+        // there is nothing to be done here because it is not
+        // expected that the odometry correction will be
+        // interrupted by another thread
+      }
+    }}
       /*for (int i = 0; i < 4; i++) {
       // drive forward three tiles
       leftMotor.setSpeed(FORWARD_SPEED);
@@ -61,15 +71,22 @@ public class Navigation extends Thread {
   } 
 
   void travelTo(double x, double y) {
-	  double deltaY = y - odometer.getY();
-	  double deltaX = x - odometer.getX();
-	  double thetaD = Math.atan(deltaY/deltaX);
-	  turnTo(thetaD - odometer.getTheta());
+	  double deltaY = (y*30.48) - odometer.getY();
+	  double deltaX = (x*30.48) - odometer.getX();
+	  
+	  if(deltaX != 0) {
+		  double thetaD = Math.atan(deltaY/deltaX);
+	  	  if(thetaD < 0) {
+	  		thetaD = Math.PI + thetaD;
+	  	  }
+		  turnTo(thetaD - odometer.getTheta());		  
+	  }
+	  
 	  leftMotor.setSpeed(FORWARD_SPEED);
       rightMotor.setSpeed(FORWARD_SPEED);
       double distance = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
-      leftMotor.rotate(convertDistance(radius, distance*30.48), true);
-      rightMotor.rotate(convertDistance(radius, distance*30.48), false);
+      leftMotor.rotate(convertDistance(radius, distance), true);
+      rightMotor.rotate(convertDistance(radius, distance), false);
 
 	  
   }
@@ -78,8 +95,14 @@ public class Navigation extends Thread {
 	  leftMotor.setSpeed(ROTATE_SPEED);
       rightMotor.setSpeed(ROTATE_SPEED);
       
-      leftMotor.rotate(convertAngle(radius, width, Math.toDegrees(theta)), true);
-      rightMotor.rotate(-convertAngle(radius, width,  Math.toDegrees(theta)), false);
+      if(theta > 0) {
+    	  	leftMotor.rotate(-convertAngle(radius, width, Math.toDegrees(theta)), true);
+    	    rightMotor.rotate(convertAngle(radius, width,  Math.toDegrees(theta)), false);
+      }
+      else if(theta < 0) {
+    	  	leftMotor.rotate(convertAngle(radius, width, Math.toDegrees(theta)), true);
+    	    rightMotor.rotate(-convertAngle(radius, width,  Math.toDegrees(theta)), false);
+      }
 	  
   }
   

@@ -66,7 +66,7 @@ public class NavigationLab {
       // usPoller = new UltrasonicPoller()
       odometer.start();
       odometryDisplay.start();
-      navigation.drive();
+      navigation.start();
       
     }
 
