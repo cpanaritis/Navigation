@@ -48,7 +48,7 @@ public class OdometryCorrection extends Thread {
   	  			lastY=0;
   	  		}
   	  		else{	//otherwise add a grid length to the previous y value 
-  	  			lastY += OdometryLab.GRID_LENGTH;
+  	  			lastY += NavigationLab.GRID_LENGTH;
 	  			odometer.setY(lastY); // update y value
   	  		}
   	  	}
@@ -59,7 +59,7 @@ public class OdometryCorrection extends Thread {
   	  			lastX = 0;
   	  		}
   	  		else{
-  	  			lastX += OdometryLab.GRID_LENGTH;	//otherwise add the grid length to the previous x value
+  	  			lastX += NavigationLab.GRID_LENGTH;	//otherwise add the grid length to the previous x value
   	  			odometer.setX(lastX); // update x value
   	  		}
   	  	}
@@ -69,7 +69,7 @@ public class OdometryCorrection extends Thread {
   	  			firstNegativeY = false;	
   	  		}
   	  		else {		//otherwise remove a grid length from the y value.
-  	  		lastY -= OdometryLab.GRID_LENGTH;
+  	  		lastY -= NavigationLab.GRID_LENGTH;
 			odometer.setY(lastY);
   	  		}
   	  	}
@@ -79,7 +79,7 @@ public class OdometryCorrection extends Thread {
   	  			firstNegativeX = false;
   	  		}
   	  		else {		//otherwise remove a grid length from the x value
-  	  		lastX -= OdometryLab.GRID_LENGTH;
+  	  		lastX -= NavigationLab.GRID_LENGTH;
   	  		odometer.setX(lastX);
   	  		}
   	  	}

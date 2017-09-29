@@ -42,12 +42,12 @@ public class Odometer extends Thread {
       															   					 the change in X position,
       															   					 the change in Y position,
        																				 */
-      distLeft = Math.PI*OdometryLab.WHEEL_RADIUS*(leftMotor.getTachoCount() - leftMotorTachoCount)/180; // Calculated using arclength
-      distRight = Math.PI*OdometryLab.WHEEL_RADIUS*(rightMotor.getTachoCount() - rightMotorTachoCount)/180;
+      distLeft = Math.PI*NavigationLab.WHEEL_RADIUS*(leftMotor.getTachoCount() - leftMotorTachoCount)/180; // Calculated using arclength
+      distRight = Math.PI*NavigationLab.WHEEL_RADIUS*(rightMotor.getTachoCount() - rightMotorTachoCount)/180;
       leftMotorTachoCount = leftMotor.getTachoCount(); // Save current TachoCount (change in angle) for next iteration
       rightMotorTachoCount = rightMotor.getTachoCount();
       deltaDistance = (distLeft+distRight)/2;	//Compute displacement of vehicle
-      deltaTheta = (distLeft-distRight)/OdometryLab.TRACK;	//Compute heading
+      deltaTheta = (distLeft-distRight)/NavigationLab.TRACK;	//Compute heading
       
       
       

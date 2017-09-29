@@ -9,16 +9,17 @@ import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.hardware.port.MotorPort;
 import lejos.hardware.port.Port;
 import lejos.hardware.sensor.EV3ColorSensor;
+import lejos.hardware.sensor.EV3UltrasonicSensor;
+import lejos.hardware.sensor.SensorModes;
 import lejos.robotics.SampleProvider;
 
-public class OdometryLab {
+public class NavigationLab {
 
   private static final EV3LargeRegulatedMotor leftMotor =
       new EV3LargeRegulatedMotor(LocalEV3.get().getPort("C"));
-  
   private static final EV3LargeRegulatedMotor rightMotor =
       new EV3LargeRegulatedMotor(LocalEV3.get().getPort("B"));
-  private static final EV3ColorSensor lightSensor = new EV3ColorSensor(LocalEV3.get().getPort("S4"));
+  private static final Port usPort = LocalEV3.get().getPort("S4");
   public static final double WHEEL_RADIUS = 2.15;
   public static final double TRACK = 12.32;
   public static final double GRID_LENGTH = 30.48;
@@ -29,9 +30,15 @@ public class OdometryLab {
     final TextLCD t = LocalEV3.get().getTextLCD();
     Odometer odometer = new Odometer(leftMotor, rightMotor);
     OdometryDisplay odometryDisplay = new OdometryDisplay(odometer, t);
-    SampleProvider colorSample = lightSensor.getMode("Red");
-    OdometryCorrection odometryCorrection = new OdometryCorrection(odometer,colorSample);
+    Navigation navigation = new Navigation(leftMotor, rightMotor, WHEEL_RADIUS, WHEEL_RADIUS, TRACK, odometer);
+    
+    SensorModes usSensor = new EV3UltrasonicSensor(usPort); // usSensor is the instance
+    SampleProvider usDistance = usSensor.getMode("Distance"); // usDistance provides samples from the ultrasonic sensor
+    float[] usData = new float[usDistance.sampleSize()]; // usData is the buffer in which data are returned
 
+ // Setup Ultrasonic Poller // This thread samples the US and invokes
+    UltrasonicPoller usPoller = null; // the selected controller on each cycle
+    
     do {
       // clear the display
       t.clear();
@@ -39,49 +46,28 @@ public class OdometryLab {
       // ask the user whether the motors should drive in a square or float
       t.drawString("< Left | Right >", 0, 0);
       t.drawString("       |        ", 0, 1);
-      t.drawString(" Float | Drive  ", 0, 2);
-      t.drawString("motors | in a   ", 0, 3);
-      t.drawString("       | square ", 0, 4);
+      t.drawString(" Choose| Start  ", 0, 2);
+      t.drawString(" points| the   ", 0, 3);
+      t.drawString("       | path ", 0, 4);
 
       buttonChoice = Button.waitForAnyPress();
     } while (buttonChoice != Button.ID_LEFT && buttonChoice != Button.ID_RIGHT);
 
     if (buttonChoice == Button.ID_LEFT) {
-
-      leftMotor.forward();
-      leftMotor.flt();
-      rightMotor.forward();
-      rightMotor.flt();
-
-      odometer.start();
-      odometryDisplay.start();
+    	
+    	// let user choose coordinates
+    	// buttonChoice = Button.waitForAnyPress();
+      
+  /*  odometer.start();
+      odometryDisplay.start(); */
 
     } else {
       // clear the display
-      t.clear();
-
-      // ask the user whether the motors should drive in a square or float
-      t.drawString("< Left | Right >", 0, 0);
-      t.drawString("  No   | with   ", 0, 1);
-      t.drawString(" corr- | corr-  ", 0, 2);
-      t.drawString(" ection| ection ", 0, 3);
-      t.drawString("       |        ", 0, 4);
-      
-      buttonChoice = Button.waitForAnyPress();
-      
+      // usPoller = new UltrasonicPoller()
       odometer.start();
       odometryDisplay.start();
+      navigation.drive();
       
-      if (buttonChoice == Button.ID_RIGHT) {
-        odometryCorrection.start();
-      }
-      
-      // spawn a new Thread to avoid SquareDriver.drive() from blocking
-      (new Thread() {
-        public void run() {
-          Navigation.drive(leftMotor, rightMotor, WHEEL_RADIUS, WHEEL_RADIUS, TRACK);
-        }
-      }).start();
     }
 
     while (Button.waitForAnyPress() != Button.ID_ESCAPE);
