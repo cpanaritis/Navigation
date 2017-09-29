@@ -17,14 +17,16 @@ public class Navigation extends Thread {
   private double width;
   private Odometer odometer;
   private static final long CORRECTION_PERIOD = 10;
+  private boolean navigating = false; 
 
   public Navigation (EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor,
-	      double leftRadius, double rightRadius, double width, Odometer odometer) {
+	      double leftRadius, double rightRadius, double width, Odometer odometer, boolean navigating) {
 	  this.leftMotor = leftMotor;
 	  this.rightMotor = rightMotor;
 	  this.radius = rightRadius;
 	  this.width = width;
 	  this.odometer = odometer;
+	  this.navigating = navigating;
   }
   public void run() {
 	long correctionStart, correctionEnd;
@@ -40,6 +42,8 @@ public class Navigation extends Thread {
     for(int i = 0; waypoints[0].length > i ; i++){
     	travelTo(waypoints[0][i],waypoints[1][i]);
     }
+    
+    System.exit(0);
     
     // this ensure the odometry correction occurs only once every period
     correctionEnd = System.currentTimeMillis();
@@ -71,15 +75,20 @@ public class Navigation extends Thread {
   } 
 
   void travelTo(double x, double y) {
+	  navigating = true;
 	  double deltaY = (y*30.48) - odometer.getY();
 	  double deltaX = (x*30.48) - odometer.getX();
 	  
-	  if(deltaX != 0) {
-		  double thetaD = Math.atan(deltaY/deltaX);
-	  	  if(thetaD < 0) {
-	  		thetaD = Math.PI + thetaD;
-	  	  }
-		  turnTo(thetaD - odometer.getTheta());		  
+	  if(deltaY < 60) {
+		  double thetaD = Math.atan2(deltaY,deltaX);
+		  double thetaTurn = thetaD - odometer.getTheta();
+		  if(thetaTurn < -Math.PI) {
+			  thetaTurn = 2*Math.PI + thetaTurn;
+		  }
+		  else if(thetaTurn > Math.PI) {
+			  thetaTurn = thetaTurn - 2*Math.PI; 
+		  }
+		  turnTo(thetaTurn);
 	  }
 	  
 	  leftMotor.setSpeed(FORWARD_SPEED);
@@ -92,14 +101,23 @@ public class Navigation extends Thread {
   }
   
   void turnTo(double theta) {
+	  navigating = true;
 	  leftMotor.setSpeed(ROTATE_SPEED);
       rightMotor.setSpeed(ROTATE_SPEED);
-      
-      if(theta > 0) {
-    	  	leftMotor.rotate(-convertAngle(radius, width, Math.toDegrees(theta)), true);
-    	    rightMotor.rotate(convertAngle(radius, width,  Math.toDegrees(theta)), false);
+      if(theta < 0) {
+    	  	if(theta > -3*Math.PI/5) {
+      	  	theta = Math.PI + theta;
+    	  	}
+    	  	if(theta <= 3*Math.PI/4 || theta < 0) { //counter clockwise turn
+        	  	leftMotor.rotate(-convertAngle(radius, width, Math.toDegrees(theta)), true);
+        	    rightMotor.rotate(convertAngle(radius, width,  Math.toDegrees(theta)), false);
+          }
+    	  	else {
+    	  		leftMotor.rotate(convertAngle(radius, width, Math.toDegrees(theta)), true);
+        	    rightMotor.rotate(-convertAngle(radius, width,  Math.toDegrees(theta)), false);
+    	  	}
       }
-      else if(theta < 0) {
+      else if(theta > 0) { //clockwise turn
     	  	leftMotor.rotate(convertAngle(radius, width, Math.toDegrees(theta)), true);
     	    rightMotor.rotate(-convertAngle(radius, width,  Math.toDegrees(theta)), false);
       }
@@ -107,7 +125,7 @@ public class Navigation extends Thread {
   }
   
   boolean isNavigating() {
-	  return true;
+	  return this.navigating;
   }
   
   private static int convertDistance(double radius, double distance) {

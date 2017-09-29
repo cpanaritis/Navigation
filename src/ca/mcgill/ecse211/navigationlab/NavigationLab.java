@@ -46,8 +46,8 @@ public class NavigationLab {
       // ask the user whether the motors should drive in a square or float
       t.drawString("< Left | Right >", 0, 0);
       t.drawString("       |        ", 0, 1);
-      t.drawString(" Choose| Start  ", 0, 2);
-      t.drawString(" points| the   ", 0, 3);
+      t.drawString(" Object| Start  ", 0, 2);
+      t.drawString(" path  | the   ", 0, 3);
       t.drawString("       | path ", 0, 4);
 
       buttonChoice = Button.waitForAnyPress();
