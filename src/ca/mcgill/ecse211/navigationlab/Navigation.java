@@ -20,13 +20,12 @@ public class Navigation extends Thread {
   private boolean navigating = false; 
 
   public Navigation (EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor,
-	      double leftRadius, double rightRadius, double width, Odometer odometer, boolean navigating) {
+	      double leftRadius, double rightRadius, double width, Odometer odometer) {
 	  this.leftMotor = leftMotor;
 	  this.rightMotor = rightMotor;
 	  this.radius = rightRadius;
 	  this.width = width;
 	  this.odometer = odometer;
-	  this.navigating = navigating;
   }
   public void run() {
 	long correctionStart, correctionEnd;
