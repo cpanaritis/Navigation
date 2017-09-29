@@ -78,17 +78,18 @@ public class Navigation extends Thread {
 	  double deltaY = (y*30.48) - odometer.getY();
 	  double deltaX = (x*30.48) - odometer.getX();
 	  
-	  if(deltaY < 60) {
-		  double thetaD = Math.atan2(deltaY,deltaX);
+		  double thetaD = Math.atan2(deltaX,deltaY);
 		  double thetaTurn = thetaD - odometer.getTheta();
 		  if(thetaTurn < -Math.PI) {
-			  thetaTurn = 2*Math.PI + thetaTurn;
+			  turnTo(2*Math.PI + thetaTurn);
+			  
 		  }
 		  else if(thetaTurn > Math.PI) {
-			  thetaTurn = thetaTurn - 2*Math.PI; 
+			  turnTo(thetaTurn - 2*Math.PI); 
 		  }
-		  turnTo(thetaTurn);
-	  }
+		  else {
+			  turnTo(thetaTurn);
+		  }
 	  
 	  leftMotor.setSpeed(FORWARD_SPEED);
       rightMotor.setSpeed(FORWARD_SPEED);
@@ -103,24 +104,8 @@ public class Navigation extends Thread {
 	  navigating = true;
 	  leftMotor.setSpeed(ROTATE_SPEED);
       rightMotor.setSpeed(ROTATE_SPEED);
-      if(theta < 0) {
-    	  	if(theta > -3*Math.PI/5) {
-      	  	theta = Math.PI + theta;
-    	  	}
-    	  	if(theta <= 3*Math.PI/4 || theta < 0) { //counter clockwise turn
-        	  	leftMotor.rotate(-convertAngle(radius, width, Math.toDegrees(theta)), true);
-        	    rightMotor.rotate(convertAngle(radius, width,  Math.toDegrees(theta)), false);
-          }
-    	  	else {
-    	  		leftMotor.rotate(convertAngle(radius, width, Math.toDegrees(theta)), true);
-        	    rightMotor.rotate(-convertAngle(radius, width,  Math.toDegrees(theta)), false);
-    	  	}
-      }
-      else if(theta > 0) { //clockwise turn
-    	  	leftMotor.rotate(convertAngle(radius, width, Math.toDegrees(theta)), true);
-    	    rightMotor.rotate(-convertAngle(radius, width,  Math.toDegrees(theta)), false);
-      }
-	  
+      leftMotor.rotate(convertAngle(radius, width, Math.toDegrees(theta)), true);
+    	  rightMotor.rotate(-convertAngle(radius, width,  Math.toDegrees(theta)), false);  
   }
   
   boolean isNavigating() {
