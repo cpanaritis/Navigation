@@ -47,8 +47,8 @@ public class NavigationLab {
       t.drawString("< Left | Right >", 0, 0);
       t.drawString("       |        ", 0, 1);
       t.drawString(" Object| Start  ", 0, 2);
-      t.drawString(" path  | the   ", 0, 3);
-      t.drawString("       | path ", 0, 4);
+      t.drawString(" avoid | the   ", 0, 3);
+      t.drawString(" path  | path ", 0, 4);
 
       buttonChoice = Button.waitForAnyPress();
     } while (buttonChoice != Button.ID_LEFT && buttonChoice != Button.ID_RIGHT);
