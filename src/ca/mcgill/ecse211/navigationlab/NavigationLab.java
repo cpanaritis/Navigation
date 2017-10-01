@@ -20,9 +20,10 @@ public class NavigationLab {
   private static final EV3LargeRegulatedMotor rightMotor =
       new EV3LargeRegulatedMotor(LocalEV3.get().getPort("B"));
   private static final Port usPort = LocalEV3.get().getPort("S4");
-  public static final double WHEEL_RADIUS = 2.15;
-  public static final double TRACK = 12.32;
+  public static final double WHEEL_RADIUS = 2.2;
+  public static final double TRACK = 12.22;
   public static final double GRID_LENGTH = 30.48;
+  public static boolean demo;
 
   public static void main(String[] args) {
     int buttonChoice;
@@ -60,13 +61,16 @@ public class NavigationLab {
       
   /*  odometer.start();
       odometryDisplay.start(); */
+    		demo = false;
 
-    } else {
+    } 
+    else {
       // clear the display
       // usPoller = new UltrasonicPoller()
       odometer.start();
       odometryDisplay.start();
       navigation.start();
+      demo = true;
       
     }
 
