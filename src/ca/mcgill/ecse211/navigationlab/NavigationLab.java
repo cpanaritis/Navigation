@@ -38,11 +38,12 @@ public class NavigationLab {
     Navigation navigation = new Navigation(leftMotor, rightMotor, WHEEL_RADIUS, WHEEL_RADIUS, TRACK, odometer);
     BangBangController bangbang = new BangBangController(bandCenter, bandWidth, motorLow, motorHigh);
     SensorModes usSensor = new EV3UltrasonicSensor(usPort); // usSensor is the instance
-    SampleProvider usDistance = usSensor.getMode("Distance"); // usDistance provides samples from the ultrasonic sensor
+    SampleProvider usDistance = usSensor.getMode("Distance"); // usDistance provides samples from this instance
     float[] usData = new float[usDistance.sampleSize()]; // usData is the buffer in which data are returned
 
  // Setup Ultrasonic Poller // This thread samples the US and invokes
     UltrasonicPoller usPoller = null; // the selected controller on each cycle
+    usPoller = new UltrasonicPoller(usDistance, usData, bangbang);
     
     do {
       // clear the display
@@ -59,23 +60,17 @@ public class NavigationLab {
     } while (buttonChoice != Button.ID_LEFT && buttonChoice != Button.ID_RIGHT);
 
     if (buttonChoice == Button.ID_LEFT) {
-    	
-    	// let user choose coordinates
-    	// buttonChoice = Button.waitForAnyPress();
-      
-  /*  odometer.start();
-      odometryDisplay.start(); */
-    		demo = false;
-
-    } 
-    else {
-      // clear the display
-      // usPoller = new UltrasonicPoller()
+    	  demo = false;
+    	  usPoller.start();
       odometer.start();
       odometryDisplay.start();
       navigation.start();
-      demo = true;
-      
+    } 
+    else {
+    	  demo = true;
+      odometer.start();
+      odometryDisplay.start();
+      navigation.start();
     }
 
     while (Button.waitForAnyPress() != Button.ID_ESCAPE);

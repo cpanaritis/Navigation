@@ -42,7 +42,7 @@ public class Navigation extends Thread {
     			travelTo(waypoints[0][i],waypoints[1][i]);
     		}
     }
-    else if(!(NavigationLab.demo)) {
+    else {
     		for(int i = 0; waypoints[0].length > i ; i++){
     			navigating = true;
     			while(navigating) {
@@ -68,9 +68,9 @@ public class Navigation extends Thread {
 
   void travelTo(double x, double y) {
 	  
-	  if(!(NavigationLab.demo)) {
+	  //if(!(NavigationLab.demo)) {
 		 
-	  }
+	 // }
 	  
 	  double deltaY = (y*30.48) - odometer.getY();
 	  double deltaX = (x*30.48) - odometer.getX();

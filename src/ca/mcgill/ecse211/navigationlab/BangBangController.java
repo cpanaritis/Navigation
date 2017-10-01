@@ -13,6 +13,7 @@ public class BangBangController implements UltrasonicController {
   private final int motorHigh;
   private int distance;
   private int filterControl;
+  private boolean active = false; 
  
 
   public BangBangController(int bandCenter, int bandwidth, int motorLow, int motorHigh) {
@@ -23,13 +24,11 @@ public class BangBangController implements UltrasonicController {
     this.motorHigh = motorHigh;
     NavigationLab.leftMotor.setSpeed(motorHigh); // Start robot moving forward
     NavigationLab.rightMotor.setSpeed(motorHigh);
-    NavigationLab.leftMotor.forward();
-    NavigationLab.rightMotor.forward();
   }
 
   @Override
   public void processUSData(int distance) {
-	  
+	if(active) {
 	  if (distance >= 255 && filterControl < FILTER_OUT) {
 	      // bad value, do not set the distance var, however do increment the
 	      // filter value
@@ -71,9 +70,16 @@ public class BangBangController implements UltrasonicController {
     		NavigationLab.leftMotor.forward();
     		NavigationLab.rightMotor.forward();
     }
+	  }
     
   }
 
+  public void activate() {
+	  active = true;
+  }
+  public void deactivate() {
+	  active = false;
+  }
   @Override
   public int readUSDistance() {
     return this.distance;
