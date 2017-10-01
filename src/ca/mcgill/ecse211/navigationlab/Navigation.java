@@ -37,11 +37,19 @@ public class Navigation extends Thread {
     while (true) {
         correctionStart = System.currentTimeMillis();
     
-    
-    for(int i = 0; waypoints[0].length > i ; i++){
-    	travelTo(waypoints[0][i],waypoints[1][i]);
+    if(NavigationLab.demo) {
+    		for(int i = 0; waypoints[0].length > i ; i++){
+    			travelTo(waypoints[0][i],waypoints[1][i]);
+    		}
     }
-    
+    else if(!(NavigationLab.demo)) {
+    		for(int i = 0; waypoints[0].length > i ; i++){
+    			navigating = true;
+    			while(navigating) {
+    				travelTo(waypoints[0][i],waypoints[1][i]);
+    			}
+		}
+    }
     System.exit(0);
     
     // this ensure the odometry correction occurs only once every period
@@ -56,25 +64,14 @@ public class Navigation extends Thread {
         // interrupted by another thread
       }
     }}
-      /*for (int i = 0; i < 4; i++) {
-      // drive forward three tiles
-      leftMotor.setSpeed(FORWARD_SPEED);
-      rightMotor.setSpeed(FORWARD_SPEED);
-
-      leftMotor.rotate(convertDistance(leftRadius, 91.44), true);
-      rightMotor.rotate(convertDistance(rightRadius, 91.44), false);
-
-      // turn 90 degrees clockwise
-      leftMotor.setSpeed(ROTATE_SPEED);
-      rightMotor.setSpeed(ROTATE_SPEED);
-
-      leftMotor.rotate(convertAngle(leftRadius, width, 90.0), true);
-      rightMotor.rotate(-convertAngle(rightRadius, width, 90.0), false);
-    } */
   } 
 
   void travelTo(double x, double y) {
-	  navigating = true;
+	  
+	  if(!(NavigationLab.demo)) {
+		 
+	  }
+	  
 	  double deltaY = (y*30.48) - odometer.getY();
 	  double deltaX = (x*30.48) - odometer.getX();
 	  
