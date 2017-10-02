@@ -13,7 +13,7 @@ public class BangBangController implements UltrasonicController {
   private final int motorHigh;
   private int distance;
   private int filterControl;
-  private boolean active = false; 
+  public boolean active = false; 
   private EV3LargeRegulatedMotor leftMotor;
   private EV3LargeRegulatedMotor rightMotor;
 

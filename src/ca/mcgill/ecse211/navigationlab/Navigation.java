@@ -21,6 +21,7 @@ public class Navigation extends Thread {
   private BangBangController bangbang;
   private UltrasonicPoller usPoller;
   private int whichPoint = 0;
+  private double lastTheta;
 
   public Navigation (EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor,
 	      double leftRadius, double rightRadius, double width, Odometer odometer, BangBangController bangbang) {
@@ -52,10 +53,11 @@ public class Navigation extends Thread {
     else {
     		navigating = true;
     		for(int i = 0; waypoints[0].length > i ; i++){
-    				i= whichPoint;
+    				//i= whichPoint;
     				travelTo(waypoints[0][i],waypoints[1][i]);
     				while(leftMotor.isMoving()&&rightMotor.isMoving()) {
-    					 if(bangbang.readUSDistance() <= 9) {
+    					 if(bangbang.readUSDistance() <= 9 && !(bangbang.active)) {
+    						lastTheta = odometer.getTheta();
     				    	  	leftMotor.stop();
     				    	 	rightMotor.stop();
     				    	  	rightMotor.setAcceleration(3000);
@@ -66,7 +68,11 @@ public class Navigation extends Thread {
     				    	  	navigating = false;
     				    	  	bangbang.activate();
     					 }
-    					 
+    					 while(bangbang.active) {
+    						 if(lastTheta - Math.PI/2 == odometer.getTheta()) {
+    							 bangbang.deactivate();
+    						 }
+    					 }
         			}
     		}
     }

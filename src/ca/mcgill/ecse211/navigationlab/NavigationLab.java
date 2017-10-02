@@ -63,10 +63,10 @@ public class NavigationLab {
 
     if (buttonChoice == Button.ID_LEFT) {
     	  demo = false;
+    	  usPoller.start();
       odometer.start();
       odometryDisplay.start();
       navigation.start();
-      usPoller.start();
     } 
     else {
     	  demo = true;
