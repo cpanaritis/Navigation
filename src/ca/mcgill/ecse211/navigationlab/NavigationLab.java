@@ -1,4 +1,4 @@
-// Lab2.java
+// Lab3.java
 
 package ca.mcgill.ecse211.navigationlab;
 
@@ -15,10 +15,11 @@ import lejos.robotics.SampleProvider;
 
 public class NavigationLab {
 
-  public static final EV3LargeRegulatedMotor leftMotor =
+  private static final EV3LargeRegulatedMotor leftMotor =
       new EV3LargeRegulatedMotor(LocalEV3.get().getPort("C"));
-  public static final EV3LargeRegulatedMotor rightMotor =
+  private static final EV3LargeRegulatedMotor rightMotor =
       new EV3LargeRegulatedMotor(LocalEV3.get().getPort("B"));
+  public static final EV3LargeRegulatedMotor sensorMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
   private static final Port usPort = LocalEV3.get().getPort("S4");
   public static final double WHEEL_RADIUS = 2.2;
   public static final double TRACK = 12.22;
@@ -35,15 +36,16 @@ public class NavigationLab {
     final TextLCD t = LocalEV3.get().getTextLCD();
     Odometer odometer = new Odometer(leftMotor, rightMotor);
     OdometryDisplay odometryDisplay = new OdometryDisplay(odometer, t);
-    Navigation navigation = new Navigation(leftMotor, rightMotor, WHEEL_RADIUS, WHEEL_RADIUS, TRACK, odometer);
-    BangBangController bangbang = new BangBangController(bandCenter, bandWidth, motorLow, motorHigh);
+    BangBangController bangbang = new BangBangController(bandCenter, bandWidth, motorLow, motorHigh, leftMotor, rightMotor);
+    Navigation navigation = new Navigation(leftMotor, rightMotor, WHEEL_RADIUS, WHEEL_RADIUS, TRACK, odometer, bangbang);
+
     SensorModes usSensor = new EV3UltrasonicSensor(usPort); // usSensor is the instance
     SampleProvider usDistance = usSensor.getMode("Distance"); // usDistance provides samples from this instance
     float[] usData = new float[usDistance.sampleSize()]; // usData is the buffer in which data are returned
 
  // Setup Ultrasonic Poller // This thread samples the US and invokes
     UltrasonicPoller usPoller = null; // the selected controller on each cycle
-    usPoller = new UltrasonicPoller(usDistance, usData, bangbang);
+    usPoller = new UltrasonicPoller(usDistance, usData, navigation, bangbang);
     
     do {
       // clear the display
@@ -61,10 +63,10 @@ public class NavigationLab {
 
     if (buttonChoice == Button.ID_LEFT) {
     	  demo = false;
-    	  usPoller.start();
       odometer.start();
       odometryDisplay.start();
       navigation.start();
+      usPoller.start();
     } 
     else {
     	  demo = true;

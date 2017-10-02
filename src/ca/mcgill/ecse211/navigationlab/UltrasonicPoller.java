@@ -1,5 +1,6 @@
 package ca.mcgill.ecse211.navigationlab;
 
+import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.robotics.SampleProvider;
 
 /**
@@ -11,13 +12,16 @@ import lejos.robotics.SampleProvider;
  */
 public class UltrasonicPoller extends Thread {
   private SampleProvider us;
-  private UltrasonicController cont;
+  private Navigation navigation;
+  private BangBangController bangbang;
   private float[] usData;
+  private boolean navigate =true; 
 
-  public UltrasonicPoller(SampleProvider us, float[] usData, UltrasonicController cont) {
+  public UltrasonicPoller(SampleProvider us, float[] usData, Navigation navigation, BangBangController bangbang) {
     this.us = us;
-    this.cont = cont;
     this.usData = usData;
+    this.navigation = navigation;
+    this.bangbang = bangbang;
   }
 
   /*
@@ -31,10 +35,31 @@ public class UltrasonicPoller extends Thread {
     while (true) {
       us.fetchSample(usData, 0); // acquire data
       distance = (int) (usData[0] * 100.0 / Math.sqrt(2)); // extract from buffer, cast to int
-      cont.processUSData(distance); // now take action depending on value
+      if(navigation.isNavigating()) {
+    	  	if(distance <= 9) {
+    	 // try {\
+    	  		for (EV3LargeRegulatedMotor motor : new EV3LargeRegulatedMotor[] {navigation.leftMotor, navigation.rightMotor, NavigationLab.sensorMotor}) {
+    	  	      motor.stop();
+    	  	      motor.setAcceleration(3000);
+    	  	    }
+    	  		navigation.leftMotor.rotate(90);
+    	  		navigation.rightMotor.rotate(-90);
+    	  		NavigationLab.sensorMotor.rotate(-45);
+
+    	  		navigation.navigating = false;
+    	  		bangbang.activate();
+    	
+  //  	  }
+  /*  	  catch(InterruptedException e) {
+    		  
+    	  }*/
+    	  	}	}	
+    
+      bangbang.processUSData(distance); // now take action depending on value
       try {
         Thread.sleep(50);
       } catch (Exception e) {
+    	  
       } // Poor man's timed sampling
     }
   }

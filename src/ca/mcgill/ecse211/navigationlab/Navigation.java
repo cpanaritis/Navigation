@@ -11,21 +11,24 @@ public class Navigation extends Thread {
   private static double[][] waypoints = new double[][] {
 	  										{0, 1, 2, 2, 1 },  // Row 0 is x coordinates
 	  										{2, 1, 2, 1, 0 } };// Row 1 is y coordinates
-  private EV3LargeRegulatedMotor leftMotor;
-  private EV3LargeRegulatedMotor rightMotor;
+  public EV3LargeRegulatedMotor leftMotor;
+  public EV3LargeRegulatedMotor rightMotor;
   private double radius;
   private double width;
   private Odometer odometer;
   private static final long CORRECTION_PERIOD = 10;
-  private boolean navigating = false; 
+  public boolean navigating; 
+  private BangBangController bangbang;
+  private int whichPoint = 0;
 
   public Navigation (EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor,
-	      double leftRadius, double rightRadius, double width, Odometer odometer) {
+	      double leftRadius, double rightRadius, double width, Odometer odometer, BangBangController bangbang) {
 	  this.leftMotor = leftMotor;
 	  this.rightMotor = rightMotor;
 	  this.radius = rightRadius;
 	  this.width = width;
 	  this.odometer = odometer;
+	  this.bangbang = bangbang;
   }
   public void run() {
 	long correctionStart, correctionEnd;
@@ -43,17 +46,18 @@ public class Navigation extends Thread {
     		}
     }
     else {
+    		navigating = true;
     		for(int i = 0; waypoints[0].length > i ; i++){
-    			navigating = true;
-    			while(navigating) {
+    			while(isNavigating()) {
+    				i= whichPoint;
     				travelTo(waypoints[0][i],waypoints[1][i]);
-    			}
 		}
+    		}
     }
     System.exit(0);
     
     // this ensure the odometry correction occurs only once every period
-    correctionEnd = System.currentTimeMillis();
+  /*  correctionEnd = System.currentTimeMillis();
     
     if (correctionEnd - correctionStart < CORRECTION_PERIOD) {
       try {
@@ -63,15 +67,14 @@ public class Navigation extends Thread {
         // expected that the odometry correction will be
         // interrupted by another thread
       }
-    }}
+    } */
+    }
   } 
 
   void travelTo(double x, double y) {
-	  
-	  //if(!(NavigationLab.demo)) {
-		 
-	 // }
-	  
+
+	  try {
+	  navigating =true;
 	  double deltaY = (y*30.48) - odometer.getY();
 	  double deltaX = (x*30.48) - odometer.getX();
 	  
@@ -93,8 +96,15 @@ public class Navigation extends Thread {
       double distance = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
       leftMotor.rotate(convertDistance(radius, distance), true);
       rightMotor.rotate(convertDistance(radius, distance), false);
-
-	  
+      whichPoint++;
+	  }
+	  catch(Exception e) {
+		  
+				System.out.print(" catch works");
+				
+				bangbang.deactivate();
+		
+	  }
   }
   
   void turnTo(double theta) {

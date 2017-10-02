@@ -14,20 +14,22 @@ public class BangBangController implements UltrasonicController {
   private int distance;
   private int filterControl;
   private boolean active = false; 
- 
+  private EV3LargeRegulatedMotor leftMotor;
+  private EV3LargeRegulatedMotor rightMotor;
 
-  public BangBangController(int bandCenter, int bandwidth, int motorLow, int motorHigh) {
+  public BangBangController(int bandCenter, int bandwidth, int motorLow, int motorHigh, EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor) {
     // Default Constructor
     this.bandCenter = bandCenter;
     this.bandwidth = bandwidth;
     this.motorLow = motorLow;
     this.motorHigh = motorHigh;
-    NavigationLab.leftMotor.setSpeed(motorHigh); // Start robot moving forward
-    NavigationLab.rightMotor.setSpeed(motorHigh);
+    this.leftMotor = leftMotor;
+	this.rightMotor = rightMotor;
   }
 
   @Override
   public void processUSData(int distance) {
+	  
 	if(active) {
 	  if (distance >= 255 && filterControl < FILTER_OUT) {
 	      // bad value, do not set the distance var, however do increment the
@@ -45,40 +47,43 @@ public class BangBangController implements UltrasonicController {
 	    }
     int error = this.distance - bandCenter;  // Computer value of error.
     if(Math.abs(error) <= bandwidth){       // Error within limits, keep going straight.
-    		NavigationLab.leftMotor.setSpeed(motorHigh);
-    		NavigationLab.rightMotor.setSpeed(motorHigh);
-    		NavigationLab.leftMotor.forward();
-    		NavigationLab.rightMotor.forward();
+    		leftMotor.setSpeed(motorHigh);
+    		rightMotor.setSpeed(motorHigh);
+    		leftMotor.forward();
+    		rightMotor.forward();
     }
     else if(error < 0){ // Negative error means too close to wall.
     	if(error < -3){ // Emergency turn used for convex angles.
-    		NavigationLab.leftMotor.setSpeed(motorLow);
-    		NavigationLab.rightMotor.setSpeed(motorLow);
-    		NavigationLab.leftMotor.forward();
-    		NavigationLab.rightMotor.backward();
+    		leftMotor.setSpeed(motorLow);
+    		rightMotor.setSpeed(motorLow);
+    		leftMotor.forward();
+    		rightMotor.backward();
     	}
     	else{
-    		NavigationLab.leftMotor.setSpeed(motorHigh);
-    		NavigationLab.rightMotor.setSpeed(motorLow);
-    		NavigationLab.leftMotor.forward();
-    		NavigationLab.rightMotor.forward();
+    		leftMotor.setSpeed(motorHigh);
+    		rightMotor.setSpeed(motorLow);
+    		leftMotor.forward();
+    		rightMotor.forward();
     	}
     }
     else if(error > 0) { // Positive error means too far from wall.
-    		NavigationLab.leftMotor.setSpeed(motorLow);
-    		NavigationLab.rightMotor.setSpeed(motorHigh);
-    		NavigationLab.leftMotor.forward();
-    		NavigationLab.rightMotor.forward();
+    		leftMotor.setSpeed(motorLow);
+    		rightMotor.setSpeed(motorHigh);
+    		leftMotor.forward();
+    		rightMotor.forward();
     }
 	  }
     
   }
 
+  public boolean getStatus() {
+	  return this.active;
+  }
   public void activate() {
-	  active = true;
+	  this.active = true;
   }
   public void deactivate() {
-	  active = false;
+	  this.active = false;
   }
   @Override
   public int readUSDistance() {
