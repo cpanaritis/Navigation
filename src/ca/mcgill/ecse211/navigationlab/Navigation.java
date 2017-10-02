@@ -5,7 +5,7 @@ package ca.mcgill.ecse211.navigationlab;
 
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
-public class Navigation extends Thread {
+public class Navigation extends Thread implements UltrasonicController {
   private static final int FORWARD_SPEED = 200;
   private static final int ROTATE_SPEED = 100;
   private static double[][] waypoints = new double[][] {
@@ -16,31 +16,33 @@ public class Navigation extends Thread {
   private double radius;
   private double width;
   private Odometer odometer;
-  private static final long CORRECTION_PERIOD = 10;
   public boolean navigating; 
-  private BangBangController bangbang;
-  private UltrasonicPoller usPoller;
   private int whichPoint = 0;
   private double lastTheta;
+  private int distanceFromBlock;
+  public boolean active = false; 
+  public static final int bandCenter = 8; // Offset from the wall (cm)
+  private static final int bandWidth = 2; // Width of dead band (cm)
+
+  private int filterControl;
+  private static final int FILTER_OUT = 20;
+
+  
 
   public Navigation (EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor,
-	      double leftRadius, double rightRadius, double width, Odometer odometer, BangBangController bangbang) {
+	      double leftRadius, double rightRadius, double width, Odometer odometer) {
 	  this.leftMotor = leftMotor;
 	  this.rightMotor = rightMotor;
 	  this.radius = rightRadius;
 	  this.width = width;
 	  this.odometer = odometer;
-	  this.bangbang = bangbang;
   }
   public void run() {
-	long correctionStart, correctionEnd;
     // reset the motors
     for (EV3LargeRegulatedMotor motor : new EV3LargeRegulatedMotor[] {leftMotor, rightMotor}) {
       motor.stop();
       motor.setAcceleration(3000);
     }
-    while (true) {
-        correctionStart = System.currentTimeMillis();
     
     if(NavigationLab.demo) {
     		for(int i = 0; waypoints[0].length > i ; i++){
@@ -51,45 +53,13 @@ public class Navigation extends Thread {
     		}
     }
     else {
-    		navigating = true;
     		for(int i = 0; waypoints[0].length > i ; i++){
-    				//i= whichPoint;
+    				i=whichPoint;
+    				navigating = true;
     				travelTo(waypoints[0][i],waypoints[1][i]);
-    				while(leftMotor.isMoving()&&rightMotor.isMoving()) {
-    					 if(bangbang.readUSDistance() <= 9 && !(bangbang.active)) {
-    						lastTheta = odometer.getTheta();
-    				    	  	leftMotor.stop();
-    				    	 	rightMotor.stop();
-    				    	  	rightMotor.setAcceleration(3000);
-    				    	  	leftMotor.setAcceleration(3000);
-    				    	  	leftMotor.rotate(90);
-    				    	  	rightMotor.rotate(-90);
-    				    	  	NavigationLab.sensorMotor.rotate(-90);
-    				    	  	navigating = false;
-    				    	  	bangbang.activate();
-    					 }
-    					 while(bangbang.active) {
-    						 if(lastTheta - Math.PI/2 == odometer.getTheta()) {
-    							 bangbang.deactivate();
-    						 }
-    					 }
-        			}
     		}
     }
-    
-    // this ensure the odometry correction occurs only once every period
-   correctionEnd = System.currentTimeMillis();
-    
-    if (correctionEnd - correctionStart < CORRECTION_PERIOD) {
-      try {
-        Thread.sleep(CORRECTION_PERIOD - (correctionEnd - correctionStart));
-      } catch (InterruptedException e) {
-        // there is nothing to be done here because it is not
-        // expected that the odometry correction will be
-        // interrupted by another thread
-      }
-    } 
-    }
+    System.exit(0); //check if this is needed
   } 
 
   void travelTo(double x, double y) {
@@ -116,9 +86,62 @@ public class Navigation extends Thread {
       double distance = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
       leftMotor.rotate(convertDistance(radius, distance), true);
       rightMotor.rotate(convertDistance(radius, distance), true);
+      
       whichPoint++;
-      navigating = false;
-	
+      boolean thing = true;
+      
+      if(!(NavigationLab.demo)) {
+      	while(leftMotor.isMoving()&&rightMotor.isMoving() || active) {
+      		
+      		if(active) {
+      			
+      		double error = this.distanceFromBlock - bandCenter;  // Computer value of error.
+      		if(lastTheta - odometer.getTheta() >= Math.PI/2) {
+				leftMotor.stop();
+				rightMotor.stop();
+				deactivate();
+				NavigationLab.sensorMotor.rotate(90);
+				whichPoint--;
+			}
+      		else {
+      			if(Math.abs(error) <= bandWidth){       // Error within limits, keep going straight.
+      	    			leftMotor.setSpeed(FORWARD_SPEED);
+      	    			rightMotor.setSpeed(FORWARD_SPEED);
+      	    			leftMotor.forward();
+      	    			rightMotor.forward();
+      			}
+      			else if(error < 0){ // Negative error means too close to wall.
+      				if(error < -3){ // Emergency turn used for convex angles.
+      		    			leftMotor.setSpeed(ROTATE_SPEED);
+      		    			rightMotor.setSpeed(ROTATE_SPEED);
+      		    			leftMotor.forward();
+      		    			rightMotor.backward();
+      				}
+      				else{
+      			    		leftMotor.setSpeed(FORWARD_SPEED);
+      			    		rightMotor.setSpeed(ROTATE_SPEED);
+      			    		leftMotor.forward();
+      			   		rightMotor.forward();
+    			    		}
+      			}
+      			else if(error > 0) { // Positive error means too far from wall.
+      				leftMotor.setSpeed(ROTATE_SPEED);
+      				rightMotor.setSpeed(FORWARD_SPEED);
+      				leftMotor.forward();
+      				rightMotor.forward();
+      			}
+      		}
+      	}
+      	System.out.println(readUSDistance());	
+		if(distanceFromBlock < bandCenter && !(active)) {
+			lastTheta = odometer.getTheta();
+		    turnTo(Math.PI/2);
+	  	  	NavigationLab.sensorMotor.setAcceleration(1000);
+	    	  	NavigationLab.sensorMotor.rotate(-90);
+	    	  	activate();
+		}
+      }
+    }
   }
   
   void turnTo(double theta) {
@@ -133,6 +156,16 @@ public class Navigation extends Thread {
 	  return this.navigating;
   }
   
+  public boolean getStatus() {
+	  return this.active;
+  }
+  public void activate() {
+	  this.active = true;
+  }
+  public void deactivate() {
+	  this.active = false;
+  }
+  
   private static int convertDistance(double radius, double distance) {
     return (int) ((180.0 * distance) / (Math.PI * radius));
   }
@@ -140,4 +173,28 @@ public class Navigation extends Thread {
   private static int convertAngle(double radius, double width, double angle) {
     return convertDistance(radius, Math.PI * width * angle / 360.0);
   }
+@Override
+public void processUSData(int distanceFromBlock) {
+	if ((distanceFromBlock >= 255 || distanceFromBlock == 0) && filterControl < FILTER_OUT) {
+	      // bad value, do not set the distance var, however do increment the
+	      // filter value
+	      filterControl++;
+	    } 
+		else if (distanceFromBlock >= 255) {
+			// We have repeated large values, so there must actually be nothing
+			// there: leave the distance alone
+			this.distanceFromBlock = distanceFromBlock;
+		} 
+		else {
+	      // distance went below 255: reset filter and leave
+	      // distance alone.
+	      filterControl = 0;
+	      this.distanceFromBlock = distanceFromBlock;
+	    }
+}
+@Override
+public int readUSDistance() {
+	// TODO Auto-generated method stub
+	return this.distanceFromBlock;
+}
 }

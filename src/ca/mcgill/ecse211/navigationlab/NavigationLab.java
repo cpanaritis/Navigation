@@ -25,10 +25,8 @@ public class NavigationLab {
   public static final double TRACK = 12.22;
   public static final double GRID_LENGTH = 30.48;
   public static boolean demo;
-  private static final int bandCenter = 10; // Offset from the wall (cm)
-  private static final int bandWidth = 2; // Width of dead band (cm)
   private static final int motorLow = 100; // Speed of slower rotating wheel (deg/sec)
-  private static final int motorHigh = 200; // Speed of the faster rotating wheel (deg/seec)
+  private static final int motorHigh = 250; // Speed of the faster rotating wheel (deg/seec)
 
   public static void main(String[] args) {
     int buttonChoice;
@@ -36,8 +34,8 @@ public class NavigationLab {
     final TextLCD t = LocalEV3.get().getTextLCD();
     Odometer odometer = new Odometer(leftMotor, rightMotor);
     OdometryDisplay odometryDisplay = new OdometryDisplay(odometer, t);
-    BangBangController bangbang = new BangBangController(bandCenter, bandWidth, motorLow, motorHigh, leftMotor, rightMotor);
-    Navigation navigation = new Navigation(leftMotor, rightMotor, WHEEL_RADIUS, WHEEL_RADIUS, TRACK, odometer, bangbang);
+  //  BangBangController bangbang = new BangBangController(bandCenter, bandWidth, motorLow, motorHigh, leftMotor, rightMotor);
+    //Navigation navigation = new Navigation(leftMotor, rightMotor, WHEEL_RADIUS, WHEEL_RADIUS, TRACK, odometer);
 
     SensorModes usSensor = new EV3UltrasonicSensor(usPort); // usSensor is the instance
     SampleProvider usDistance = usSensor.getMode("Distance"); // usDistance provides samples from this instance
@@ -45,7 +43,6 @@ public class NavigationLab {
 
  // Setup Ultrasonic Poller // This thread samples the US and invokes
     UltrasonicPoller usPoller = null; // the selected controller on each cycle
-    usPoller = new UltrasonicPoller(usDistance, usData, navigation, bangbang);
     
     do {
       // clear the display
@@ -62,14 +59,17 @@ public class NavigationLab {
     } while (buttonChoice != Button.ID_LEFT && buttonChoice != Button.ID_RIGHT);
 
     if (buttonChoice == Button.ID_LEFT) {
+    	  Navigation navigation = new Navigation(leftMotor, rightMotor, WHEEL_RADIUS, WHEEL_RADIUS, TRACK, odometer);
+    	  usPoller = new UltrasonicPoller(usDistance, usData, navigation);
     	  demo = false;
-    	  usPoller.start();
+    	  navigation.start();
       odometer.start();
       odometryDisplay.start();
-      navigation.start();
+      usPoller.start();
     } 
     else {
     	  demo = true;
+    	  Navigation navigation = new Navigation(leftMotor, rightMotor, WHEEL_RADIUS, WHEEL_RADIUS, TRACK, odometer);
       odometer.start();
       odometryDisplay.start();
       navigation.start();

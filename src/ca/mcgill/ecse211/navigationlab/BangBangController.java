@@ -31,6 +31,7 @@ public class BangBangController implements UltrasonicController {
   public void processUSData(int distance) {
 	  
 	if(active) {
+		
 	  if (distance >= 255 && filterControl < FILTER_OUT) {
 	      // bad value, do not set the distance var, however do increment the
 	      // filter value
