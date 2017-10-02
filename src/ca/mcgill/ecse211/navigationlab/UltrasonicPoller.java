@@ -14,8 +14,7 @@ public class UltrasonicPoller extends Thread {
   private SampleProvider us;
   private Navigation navigation;
   private BangBangController bangbang;
-  private float[] usData;
-  private boolean navigate =true; 
+  private float[] usData; 
 
   public UltrasonicPoller(SampleProvider us, float[] usData, Navigation navigation, BangBangController bangbang) {
     this.us = us;
@@ -35,25 +34,6 @@ public class UltrasonicPoller extends Thread {
     while (true) {
       us.fetchSample(usData, 0); // acquire data
       distance = (int) (usData[0] * 100.0 / Math.sqrt(2)); // extract from buffer, cast to int
-      if(navigation.isNavigating()) {
-    	  	if(distance <= 9) {
-    	 // try {\
-    	  		for (EV3LargeRegulatedMotor motor : new EV3LargeRegulatedMotor[] {navigation.leftMotor, navigation.rightMotor, NavigationLab.sensorMotor}) {
-    	  	      motor.stop();
-    	  	      motor.setAcceleration(3000);
-    	  	    }
-    	  		navigation.leftMotor.rotate(90);
-    	  		navigation.rightMotor.rotate(-90);
-    	  		NavigationLab.sensorMotor.rotate(-45);
-
-    	  		navigation.navigating = false;
-    	  		bangbang.activate();
-    	
-  //  	  }
-  /*  	  catch(InterruptedException e) {
-    		  
-    	  }*/
-    	  	}	}	
     
       bangbang.processUSData(distance); // now take action depending on value
       try {
