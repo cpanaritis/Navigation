@@ -15,7 +15,12 @@ public class UltrasonicPoller extends Thread {
   private UltrasonicController cont;
   private float[] usData; 
 
-  public UltrasonicPoller(SampleProvider us, float[] usData, UltrasonicController cont) {
+  /**
+ * @param us
+ * @param usData
+ * @param cont
+ */
+public UltrasonicPoller(SampleProvider us, float[] usData, UltrasonicController cont) {
     this.us = us;
     this.usData = usData;
     this.cont = cont;

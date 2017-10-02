@@ -1,8 +1,20 @@
 package ca.mcgill.ecse211.navigationlab;
 
+/**
+ * @author Christos Panaritis Kevin Chuong
+ *Abstract class
+ */
 public interface UltrasonicController {
 
-  public void processUSData(int distance);
+  /**
+ * @param distance
+ * abstract method
+ */
+public void processUSData(int distance);
 
-  public int readUSDistance();
+  /**
+ * @return
+ * abstract method
+ */
+public int readUSDistance();
 }

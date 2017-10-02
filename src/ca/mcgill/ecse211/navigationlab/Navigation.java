@@ -5,12 +5,18 @@ package ca.mcgill.ecse211.navigationlab;
 
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
+/**
+ * @author Christos Panaritis Kevin Chuong
+ * Navigation class
+ *
+ */
 public class Navigation extends Thread implements UltrasonicController {
+	
   private static final int FORWARD_SPEED = 200;
   private static final int ROTATE_SPEED = 100;
   private static double[][] waypoints = new double[][] {
-	  										{0, 1, 2, 2, 1 },  // Row 0 is x coordinates
-	  										{2, 1, 2, 1, 0 } };// Row 1 is y coordinates
+	  										{1, 0, 2, 2, 1 },  // Row 0 is x coordinates
+	  										{1, 2, 2, 1, 0 } };// Row 1 is y coordinates
   public EV3LargeRegulatedMotor leftMotor;
   public EV3LargeRegulatedMotor rightMotor;
   private double radius;
@@ -20,7 +26,7 @@ public class Navigation extends Thread implements UltrasonicController {
   private int whichPoint = 0;
   private double lastTheta;
   private int distanceFromBlock;
-  public boolean active = false; 
+  public boolean active = false;  // Checks if avoidance should run or not (bang bang)
   public static final int bandCenter = 8; // Offset from the wall (cm)
   private static final int bandWidth = 2; // Width of dead band (cm)
 
@@ -29,7 +35,16 @@ public class Navigation extends Thread implements UltrasonicController {
 
   
 
-  public Navigation (EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor,
+  /**
+   * constructor
+ * @param leftMotor
+ * @param rightMotor
+ * @param leftRadius
+ * @param rightRadius
+ * @param width
+ * @param odometer
+ */
+public Navigation (EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor,
 	      double leftRadius, double rightRadius, double width, Odometer odometer) {
 	  this.leftMotor = leftMotor;
 	  this.rightMotor = rightMotor;
@@ -37,7 +52,12 @@ public class Navigation extends Thread implements UltrasonicController {
 	  this.width = width;
 	  this.odometer = odometer;
   }
-  public void run() {
+  
+  /* (non-Javadoc)
+ * @see java.lang.Thread#run()
+ * runs the thread depending on what mode you are on.
+ */
+public void run() {
     // reset the motors
     for (EV3LargeRegulatedMotor motor : new EV3LargeRegulatedMotor[] {leftMotor, rightMotor}) {
       motor.stop();
@@ -62,7 +82,13 @@ public class Navigation extends Thread implements UltrasonicController {
     System.exit(0); //check if this is needed
   } 
 
-  void travelTo(double x, double y) {
+  /**
+ * @param x
+ * @param y
+ * The first part travels the robot to the point
+ * The second part is used to avoid the obstacle
+ */
+void travelTo(double x, double y) {
 
 	  navigating =true;
 	  double deltaY = (y*30.48) - odometer.getY();
@@ -144,7 +170,11 @@ public class Navigation extends Thread implements UltrasonicController {
     }
   }
   
-  void turnTo(double theta) {
+  /**
+ * @param theta
+ * finds what the robot should rotate at.
+ */
+void turnTo(double theta) {
 	  navigating = true;
 	  leftMotor.setSpeed(ROTATE_SPEED);
       rightMotor.setSpeed(ROTATE_SPEED);
@@ -152,27 +182,54 @@ public class Navigation extends Thread implements UltrasonicController {
     	  rightMotor.rotate(-convertAngle(radius, width,  Math.toDegrees(theta)), false);  
   }
   
-  boolean isNavigating() {
+  /**
+ * @return the navigating boolean 
+ */
+boolean isNavigating() {
 	  return this.navigating;
   }
   
-  public boolean getStatus() {
+  /**
+ * @return the boolean
+ */
+public boolean getStatus() {
 	  return this.active;
   }
-  public void activate() {
+  /**
+ * sets the boolean to true
+ */
+public void activate() {
 	  this.active = true;
   }
-  public void deactivate() {
+ 
+/**
+ * sets the boolean to false
+ */
+public void deactivate() {
 	  this.active = false;
   }
   
-  private static int convertDistance(double radius, double distance) {
+  /**
+ * @param radius
+ * @param distance
+ * @return
+ */
+private static int convertDistance(double radius, double distance) {
     return (int) ((180.0 * distance) / (Math.PI * radius));
   }
 
-  private static int convertAngle(double radius, double width, double angle) {
+  /**
+ * @param radius
+ * @param width
+ * @param angle
+ * @return
+ */
+private static int convertAngle(double radius, double width, double angle) {
     return convertDistance(radius, Math.PI * width * angle / 360.0);
   }
+/* (non-Javadoc)
+ * @see ca.mcgill.ecse211.navigationlab.UltrasonicController#processUSData(int)
+ */
 @Override
 public void processUSData(int distanceFromBlock) {
 	if ((distanceFromBlock >= 255 || distanceFromBlock == 0) && filterControl < FILTER_OUT) {
@@ -192,9 +249,12 @@ public void processUSData(int distanceFromBlock) {
 	      this.distanceFromBlock = distanceFromBlock;
 	    }
 }
+
+/* (non-Javadoc)
+ * @see ca.mcgill.ecse211.navigationlab.UltrasonicController#readUSDistance()
+ */
 @Override
 public int readUSDistance() {
-	// TODO Auto-generated method stub
 	return this.distanceFromBlock;
 }
 }

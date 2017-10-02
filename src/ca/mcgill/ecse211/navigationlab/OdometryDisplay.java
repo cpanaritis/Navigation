@@ -6,19 +6,30 @@ package ca.mcgill.ecse211.navigationlab;
 
 import lejos.hardware.lcd.TextLCD;
 
+/**
+ * @author Christos Panaritis Kevin Chuong
+ *
+ */
 public class OdometryDisplay extends Thread {
   private static final long DISPLAY_PERIOD = 250;
   private Odometer odometer;
   private TextLCD t;
 
-  // constructor
-  public OdometryDisplay(Odometer odometer, TextLCD t) {
+  /**
+ * @param odometer
+ * @param t
+ * constructor
+ */
+public OdometryDisplay(Odometer odometer, TextLCD t) {
     this.odometer = odometer;
     this.t = t;
   }
 
   // run method (required for Thread)
-  public void run() {
+  /* (non-Javadoc)
+ * @see java.lang.Thread#run()
+ */
+public void run() {
     long displayStart, displayEnd;
     double[] position = new double[3];
 
@@ -70,7 +81,12 @@ public class OdometryDisplay extends Thread {
     }
   }
 
-  private static String formattedDoubleToString(double x, int places) {
+  /**
+ * @param x
+ * @param places
+ * @return
+ */
+private static String formattedDoubleToString(double x, int places) {
     String result = "";
     String stack = "";
     long t;

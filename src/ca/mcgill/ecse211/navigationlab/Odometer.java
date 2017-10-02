@@ -2,6 +2,10 @@ package ca.mcgill.ecse211.navigationlab;
 
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 
+/**
+ * @author Christos Panaritis Kevin Chuong
+ *
+ */
 public class Odometer extends Thread {
   // robot position
   private double x;
@@ -16,8 +20,12 @@ public class Odometer extends Thread {
 
   private Object lock; /*lock object for mutual exclusion*/
 
-  // default constructor
-  public Odometer(EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor) {
+  /**
+ * @param leftMotor
+ * @param rightMotor
+ * Constructor
+ */
+public Odometer(EV3LargeRegulatedMotor leftMotor, EV3LargeRegulatedMotor rightMotor) {
     this.leftMotor = leftMotor;
     this.rightMotor = rightMotor;
     this.x = 0.0;
@@ -29,7 +37,11 @@ public class Odometer extends Thread {
   }
 
   // run method (required for Thread)
-  public void run() {
+  /* (non-Javadoc)
+ * @see java.lang.Thread#run()
+ * run method (required for Thread)
+ */
+public void run() {
     long updateStart, updateEnd;
     
     while (true) {
@@ -79,7 +91,11 @@ public class Odometer extends Thread {
     }
   }
 
-  public void getPosition(double[] position, boolean[] update) {
+  /**
+ * @param position
+ * @param update
+ */
+public void getPosition(double[] position, boolean[] update) {
     // ensure that the values don't change while the odometer is running
     synchronized (lock) {
       if (update[0])
@@ -91,7 +107,10 @@ public class Odometer extends Thread {
     }
   }
 
-  public double getX() {
+  /**
+ * @return x
+ */
+public double getX() {
     double result;
 
     synchronized (lock) {
@@ -101,7 +120,10 @@ public class Odometer extends Thread {
     return result;
   }
 
-  public double getY() {
+  /**
+ * @return y
+ */
+public double getY() {
     double result;
 
     synchronized (lock) {
@@ -111,7 +133,10 @@ public class Odometer extends Thread {
     return result;
   }
 
-  public double getTheta() {
+  /**
+ * @return theta
+ */
+public double getTheta() {
     double result;
 
     synchronized (lock) {
@@ -121,8 +146,12 @@ public class Odometer extends Thread {
     return result;
   }
 
-  // mutators
-  public void setPosition(double[] position, boolean[] update) {
+  /**
+ * @param position
+ * @param update
+ * mutator
+ */
+public void setPosition(double[] position, boolean[] update) {
     // ensure that the values don't change while the odometer is running
     synchronized (lock) {
       if (update[0])

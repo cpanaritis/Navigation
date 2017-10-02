@@ -13,6 +13,10 @@ import lejos.hardware.sensor.EV3UltrasonicSensor;
 import lejos.hardware.sensor.SensorModes;
 import lejos.robotics.SampleProvider;
 
+/**
+ * @author Christos Panaritis Kevin Chuong
+ *
+ */
 public class NavigationLab {
 
   private static final EV3LargeRegulatedMotor leftMotor =
@@ -22,20 +26,23 @@ public class NavigationLab {
   public static final EV3LargeRegulatedMotor sensorMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
   private static final Port usPort = LocalEV3.get().getPort("S4");
   public static final double WHEEL_RADIUS = 2.2;
-  public static final double TRACK = 12.22;
+  public static final double TRACK = 12.27;
   public static final double GRID_LENGTH = 30.48;
-  public static boolean demo;
+  public static boolean demo;  //Indicates which mode we are in false for navigation true for avoidance
   private static final int motorLow = 100; // Speed of slower rotating wheel (deg/sec)
   private static final int motorHigh = 250; // Speed of the faster rotating wheel (deg/seec)
 
-  public static void main(String[] args) {
+  /**
+ * @param args
+ * runs the program
+ */
+public static void main(String[] args) {
     int buttonChoice;
 
     final TextLCD t = LocalEV3.get().getTextLCD();
     Odometer odometer = new Odometer(leftMotor, rightMotor);
     OdometryDisplay odometryDisplay = new OdometryDisplay(odometer, t);
-  //  BangBangController bangbang = new BangBangController(bandCenter, bandWidth, motorLow, motorHigh, leftMotor, rightMotor);
-    //Navigation navigation = new Navigation(leftMotor, rightMotor, WHEEL_RADIUS, WHEEL_RADIUS, TRACK, odometer);
+
 
     SensorModes usSensor = new EV3UltrasonicSensor(usPort); // usSensor is the instance
     SampleProvider usDistance = usSensor.getMode("Distance"); // usDistance provides samples from this instance
