@@ -15,8 +15,8 @@ public class Navigation extends Thread implements UltrasonicController {
   private static final int FORWARD_SPEED = 200;
   private static final int ROTATE_SPEED = 100;
   private static double[][] waypoints = new double[][] {
-	  										{1, 0, 2, 2, 1 },  // Row 0 is x coordinates
-	  										{1, 2, 2, 1, 0 } };// Row 1 is y coordinates
+	  										{2, 1, 1, 2 },  // Row 0 is x coordinates
+	  										{1, 1, 2, 0 } };// Row 1 is y coordinates
   public EV3LargeRegulatedMotor leftMotor;
   public EV3LargeRegulatedMotor rightMotor;
   private double radius;
@@ -79,7 +79,7 @@ public void run() {
     				travelTo(waypoints[0][i],waypoints[1][i]);
     		}
     }
-    System.exit(0); //check if this is needed
+   //check if this is needed
   } 
 
   /**
